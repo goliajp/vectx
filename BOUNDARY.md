@@ -30,7 +30,7 @@ The following work units are included in v0. Anything else is out of scope until
 - **Test suite** — fixtures-based unit tests (currently 5) **plus** at least one cold-LLM e2e test where Claude writes vectx through the spec and the output renders.
 - **CLI entry** — `vectx render <file>` (or equivalent) that compiles vectx code to SVG. Distributed alongside the lib.
 - **Claude skill entry** — `~/.claude/skills/vectx/` package so Claude Code auto-discovers and uses vectx without prompting setup.
-- **Demo** (Vite playground) — kept as human sanity-check tool; not the product.
+- **Web showcase** (`web/`) — landing + interactive decoder demo. Visible thesis demonstration + human sanity check. **Not** an end-user IDE or code editor.
 
 ## Out of scope (v0 — explicit non-goals)
 
