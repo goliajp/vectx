@@ -1,0 +1,29 @@
+{
+  "name": "vectx",
+  "version": "0.0.0",
+  "description": "Name reservation for vectx — the descriptive language between AI and the vector world. Functional package not yet released; source at https://github.com/goliajp/vectx.",
+  "type": "module",
+  "license": "MIT",
+  "author": "GOLIA K.K.",
+  "homepage": "https://github.com/goliajp/vectx",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/goliajp/vectx.git"
+  },
+  "bugs": {
+    "url": "https://github.com/goliajp/vectx/issues"
+  },
+  "files": [
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "vector",
+    "svg",
+    "dsl",
+    "ai",
+    "llm",
+    "placeholder",
+    "name-reservation"
+  ]
+}
