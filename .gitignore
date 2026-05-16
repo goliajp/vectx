@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-demo/
+*.log
+.env
+.env.local
+.DS_Store
+*.tsbuildinfo
+.vite/
+.idea/
+.vscode/
+bun.lockb
+.claude/handoff.md
