@@ -31,10 +31,10 @@ export function DecoderPanel({ url }: { url: string }) {
     }
   }, [url])
 
-  if (state.tag === 'loading') return <Loading label="fetching + recognizing…" />
+  if (state.tag === 'loading')
+    return <div className="vx-status mono">FETCHING + RECOGNIZING …</div>
   if (state.tag === 'error')
-    return <div style={{ color: 'var(--accent)', padding: 12 }}>error: {state.msg}</div>
-
+    return <div className="vx-status vx-status-err mono">ERR · {state.msg}</div>
   return <Result raw={state.raw} rec={state.rec} parseMs={state.parseMs} />
 }
 
@@ -44,112 +44,50 @@ function Result({ raw, rec, parseMs }: { raw: string; rec: Recognized; parseMs: 
   const labeled = rec.primitives.filter((p) => 'label' in p && p.label).length
   const texts = rec.primitives.filter((p) => p.kind === 'text').length
   const docCount = rec.doc.titles.length + rec.doc.descs.length + rec.doc.metadata.length
+  const sizeKb = (new Blob([raw]).size / 1024).toFixed(0)
+  const dslBytes = dsl.length.toLocaleString()
+  const semanticItems = labeled + texts + docCount
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-      <Panel label={`input · ${(new Blob([raw]).size / 1024).toFixed(0)} KB`}>
-        <div
-          style={{ width: '100%', aspectRatio: '1 / 1', background: '#fff' }}
-          dangerouslySetInnerHTML={{ __html: raw }}
-        />
+    <div className="vx-grid">
+      <Panel label="INPUT" meta={`${sizeKb} KB`}>
+        <div className="vx-frame" dangerouslySetInnerHTML={{ __html: raw }} />
       </Panel>
-      <Panel label={`recognized · ${rec.primitives.length} prims · ${rec.styles.size} styles`}>
-        <div
-          style={{
-            padding: 8,
-            background: 'rgba(31,110,58,0.06)',
-            fontSize: 11,
-            marginBottom: 6,
-          }}
-        >
-          <div
-            className="mono"
-            style={{
-              fontSize: 9,
-              letterSpacing: '0.22em',
-              color: 'var(--muted)',
-              textTransform: 'uppercase',
-              marginBottom: 4,
-            }}
-          >
-            intent extracted
+
+      <Panel
+        label="RECOGNIZED"
+        meta={`${rec.primitives.length} prims · ${rec.styles.size} styles`}
+      >
+        <div className="vx-intent">
+          <div className="vx-intent-head mono">
+            <span>INTENT EXTRACTED</span>
+            <span className="vx-intent-time">{parseMs.toFixed(0)} ms</span>
           </div>
           {rec.doc.titles[0] && (
-            <div style={{ marginBottom: 2 }}>
-              <span
-                className="mono"
-                style={{ fontSize: 9, color: 'var(--faint)', marginRight: 4 }}
-              >
-                title:
-              </span>
-              {rec.doc.titles[0]}
+            <div className="vx-intent-row">
+              <span className="mono vx-intent-key">TITLE</span>
+              <span className="vx-intent-val">{rec.doc.titles[0]}</span>
             </div>
           )}
-          <div style={{ display: 'flex', gap: 12, fontSize: 10 }}>
-            {labeled > 0 && (
-              <span>
-                <span className="mono" style={{ color: 'var(--faint)' }}>
-                  id:
-                </span>{' '}
-                {labeled}
-              </span>
-            )}
-            {texts > 0 && (
-              <span>
-                <span className="mono" style={{ color: 'var(--faint)' }}>
-                  text:
-                </span>{' '}
-                {texts}
-              </span>
-            )}
-            {rec.doc.descs.length > 0 && (
-              <span>
-                <span className="mono" style={{ color: 'var(--faint)' }}>
-                  desc:
-                </span>{' '}
-                {rec.doc.descs.length}
-              </span>
-            )}
-            <span style={{ marginLeft: 'auto', color: 'var(--muted)' }}>
-              recognize {parseMs.toFixed(0)}ms
-            </span>
+          <div className="vx-intent-stats">
+            {labeled > 0 && <Stat k="id" v={labeled} />}
+            {texts > 0 && <Stat k="text" v={texts} />}
+            {rec.doc.descs.length > 0 && <Stat k="desc" v={rec.doc.descs.length} />}
           </div>
         </div>
-        <pre
-          className="mono"
-          style={{
-            fontSize: 9.5,
-            lineHeight: 1.5,
-            maxHeight: 360,
-            overflow: 'auto',
-            padding: 8,
-            background: 'rgba(28,22,17,0.05)',
-            border: '1px solid var(--border)',
-            color: 'var(--fg)',
-            whiteSpace: 'pre',
-          }}
-        >
+        <pre className="mono vx-dsl">
           <code>
             {dsl.slice(0, 4000)}
             {dsl.length > 4000 ? '\n…' : ''}
           </code>
         </pre>
-        <div
-          className="mono"
-          style={{
-            fontSize: 9,
-            letterSpacing: '0.18em',
-            color: 'var(--faint)',
-            marginTop: 6,
-            textTransform: 'uppercase',
-          }}
-        >
-          {dsl.length.toLocaleString()} bytes · {docCount} doc ·{' '}
-          {labeled + texts + docCount} semantic items
+        <div className="mono vx-dsl-foot">
+          {dslBytes} BYTES · {docCount} DOC · {semanticItems} SEMANTIC
         </div>
       </Panel>
-      <Panel label={`re-render · ${decoded.length} prims`}>
-        <div style={{ width: '100%', aspectRatio: '1 / 1', background: '#fff' }}>
+
+      <Panel label="RE-RENDER" meta={`${decoded.length} prims`}>
+        <div className="vx-frame">
           <svg
             viewBox={`0 0 ${rec.viewW} ${rec.viewH}`}
             width="100%"
@@ -164,41 +102,31 @@ function Result({ raw, rec, parseMs }: { raw: string; rec: Recognized; parseMs: 
   )
 }
 
-function Panel({ label, children }: { label: string; children: React.ReactNode }) {
+function Panel({
+  label,
+  meta,
+  children,
+}: {
+  label: string
+  meta: string
+  children: React.ReactNode
+}) {
   return (
-    <div style={{ border: '1px solid var(--border)', padding: 8 }}>
-      <div
-        className="mono"
-        style={{
-          fontSize: 9,
-          letterSpacing: '0.22em',
-          color: 'var(--muted)',
-          marginBottom: 6,
-          textTransform: 'uppercase',
-        }}
-      >
-        {label}
-      </div>
-      {children}
-    </div>
+    <article className="vx-panel">
+      <header className="vx-panel-head">
+        <h3 className="mono vx-panel-label">{label}</h3>
+        <span className="mono vx-panel-meta">{meta}</span>
+      </header>
+      <div className="vx-panel-body">{children}</div>
+    </article>
   )
 }
 
-function Loading({ label }: { label: string }) {
+function Stat({ k, v }: { k: string; v: number }) {
   return (
-    <div
-      className="mono"
-      style={{
-        padding: 20,
-        textAlign: 'center',
-        fontSize: 11,
-        letterSpacing: '0.22em',
-        textTransform: 'uppercase',
-        color: 'var(--muted)',
-        border: '1px solid var(--border)',
-      }}
-    >
-      {label}
-    </div>
+    <span className="vx-stat">
+      <span className="mono vx-stat-k">{k}</span>
+      <span className="mono vx-stat-v">{v}</span>
+    </span>
   )
 }
