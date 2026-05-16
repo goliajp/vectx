@@ -31,6 +31,7 @@ The following work units are included in v0. Anything else is out of scope until
 - **CLI entry** — `vectx render <file>` (or equivalent) that compiles vectx code to SVG. Distributed alongside the lib.
 - **Claude skill entry** — `~/.claude/skills/vectx/` package so Claude Code auto-discovers and uses vectx without prompting setup.
 - **Web showcase** (`web/`) — landing + interactive decoder demo. Visible thesis demonstration + human sanity check. **Not** an end-user IDE or code editor.
+- **Name reservation on npm and crates.io** — stub `0.0.0` placeholders that lock the `vectx` name on both registries. No functional release; consumers still install from git. Stub sources live under `publish-stubs/`.
 
 ## Out of scope (v0 — explicit non-goals)
 
@@ -41,7 +42,7 @@ These are deliberately not done in v0. Do not add them to v0 without going throu
 - **Generic MCP / multi-client integration** — only the Claude Code/CLI integration ships. MCP server form is not in v0.
 - **Other compile targets** — Canvas, PDF, DXF, G-code, JSON IR, DST embroidery. All v1+.
 - **Designer-facing tooling** — GUI editor, web playground for end users, Figma plugin, Adobe extension.
-- **npm public registry publish** — repo stays at `goliajp/vectx` on GitHub. Install via git URL only. No version-number commitments while spec is still moving.
+- **npm / crates.io functional release** — only the `0.0.0` stub name-reservation packages ship in v0. No public version-number commitments while spec is still moving; consumers install via git URL.
 - **SVG fidelity features** — gradients, clipPath, filter, transform flatten, faithful pixel round-trip. AI reasoning doesn't need them; compile-target layer (v1+) can handle them if ever needed.
 - **External collaborator recruiting** — no outreach, no "give us feedback" campaigns in v0.
 - **Business model decisions** — license stays MIT, no SaaS, no dual-license, no paid tier work.
