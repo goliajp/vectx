@@ -1,0 +1,16 @@
+[package]
+name = "vectx-wasm"
+version = "0.0.0"
+edition = "2024"
+description = "Name reservation for vectx-wasm — WebAssembly bindings of vectx (the descriptive language between AI and the vector world). Functional implementation not yet released."
+license = "MIT"
+repository = "https://github.com/goliajp/vectx"
+homepage = "https://github.com/goliajp/vectx"
+documentation = "https://docs.rs/vectx-wasm"
+readme = "README.md"
+keywords = ["vector", "svg", "dsl", "wasm", "ai"]
+categories = ["graphics", "wasm"]
+authors = ["GOLIA K.K."]
+
+[lib]
+path = "src/lib.rs"
