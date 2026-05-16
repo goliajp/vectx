@@ -1,0 +1,35 @@
+@import 'tailwindcss';
+
+:root {
+  --bg: #f1ead4;
+  --fg: #1c1611;
+  --muted: #6c624f;
+  --faint: #978a72;
+  --border: #ddd2b6;
+  --accent: #c2241e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono {
+  font-family: ui-monospace, 'SF Mono', Menlo, Monaco, 'Cascadia Code', monospace;
+}
