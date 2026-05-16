@@ -1,0 +1,17 @@
+[package]
+name = "vectx"
+version = "0.0.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Name reservation for vectx — the descriptive language between AI and the vector world. Functional implementation not yet released."
+license = "MIT"
+repository = "https://github.com/goliajp/vectx"
+homepage = "https://github.com/goliajp/vectx"
+documentation = "https://docs.rs/vectx"
+readme = "README.md"
+keywords = ["vector", "svg", "dsl", "ai", "llm"]
+categories = ["graphics", "rendering"]
+authors = ["GOLIA K.K."]
+
+[lib]
+path = "src/lib.rs"
