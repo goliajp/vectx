@@ -42,7 +42,9 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-      - name: install
+      - name: install root (web tsc resolves ../src via vectx alias)
+        run: bun install
+      - name: install web
         working-directory: web
         run: bun install
       - name: typecheck
