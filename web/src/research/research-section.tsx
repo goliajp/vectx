@@ -9,19 +9,6 @@ export function ResearchSection() {
   const [activeId, setActiveId] = useState(RESEARCH_TOPICS[0]?.id ?? '')
   const active = RESEARCH_TOPICS.find((t) => t.id === activeId) ?? RESEARCH_TOPICS[0]
 
-  if (!active) {
-    return (
-      <section id="research" className="vx-research">
-        <header className="vx-research-head">
-          <h2 className="mono vx-research-title">RESEARCH {SEP} EXPLORATION NOTES</h2>
-          <p className="mono vx-research-sub">
-            NO TOPICS YET {SEP} ADD A FOLDER UNDER .CLAUDE/RESEARCHES/TOPIC/
-          </p>
-        </header>
-      </section>
-    )
-  }
-
   return (
     <section id="research" className="vx-research">
       <header className="vx-research-head">
@@ -31,20 +18,31 @@ export function ResearchSection() {
         </p>
       </header>
 
-      {RESEARCH_TOPICS.length > 1 && (
-        <TopicPicker activeId={activeId} setActiveId={setActiveId} />
-      )}
-
-      <TopicMeta topic={active} />
-      <NotesPanel topic={active} />
-      {active.playgroundHtml && (
-        <PlaygroundPanel id={active.id} html={active.playgroundHtml} />
+      {RESEARCH_TOPICS.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div className="vx-research-layout">
+          <TopicMenu activeId={activeId} setActiveId={setActiveId} />
+          {active && <TopicView topic={active} />}
+        </div>
       )}
     </section>
   )
 }
 
-function TopicPicker({
+function EmptyState() {
+  return (
+    <div className="vx-research-empty mono">
+      <p>NO TOPICS YET.</p>
+      <p className="vx-research-empty-hint">
+        ADD A FOLDER UNDER <code>.claude/researches/topic/&lt;id&gt;/</code> WITH A
+        <code>README.md</code> AND OPTIONAL <code>playground.html</code>.
+      </p>
+    </div>
+  )
+}
+
+function TopicMenu({
   activeId,
   setActiveId,
 }: {
@@ -52,25 +50,47 @@ function TopicPicker({
   setActiveId: (id: string) => void
 }) {
   return (
-    <nav className="vx-research-picker" aria-label="research topic picker">
-      {RESEARCH_TOPICS.map((t, i) => {
-        const isActive = t.id === activeId
-        return (
-          <button
-            key={t.id}
-            type="button"
-            onClick={() => setActiveId(t.id)}
-            className={`vx-research-pill${isActive ? ' is-active' : ''}`}
-            aria-pressed={isActive}
-          >
-            <span className="mono vx-research-pill-idx">
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <span className="mono vx-research-pill-id">{t.id}</span>
-          </button>
-        )
-      })}
+    <nav className="vx-research-menu" aria-label="research topics">
+      <div className="vx-research-menu-head mono">
+        <span>TOPICS</span>
+        <span className="vx-research-menu-count">{RESEARCH_TOPICS.length.toString().padStart(2, '0')}</span>
+      </div>
+      <ul className="vx-research-menu-list">
+        {RESEARCH_TOPICS.map((t, i) => {
+          const isActive = t.id === activeId
+          return (
+            <li key={t.id}>
+              <button
+                type="button"
+                onClick={() => setActiveId(t.id)}
+                className={`vx-research-menu-item${isActive ? ' is-active' : ''}`}
+                aria-pressed={isActive}
+              >
+                <span className="mono vx-research-menu-idx">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="vx-research-menu-body">
+                  <span className="mono vx-research-menu-id">{t.id}</span>
+                </span>
+                <span className="vx-research-menu-arrow" aria-hidden>
+                  {isActive ? '●' : '○'}
+                </span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
     </nav>
+  )
+}
+
+function TopicView({ topic }: { topic: Topic }) {
+  return (
+    <div className="vx-research-view">
+      <TopicMeta topic={topic} />
+      <NotesPanel topic={topic} />
+      {topic.playgroundHtml && <PlaygroundPanel id={topic.id} html={topic.playgroundHtml} />}
+    </div>
   )
 }
 
@@ -134,7 +154,7 @@ function PlaygroundPanel({ id, html }: { id: string; html: string }) {
           {html.length.toLocaleString()} BYTES {SEP} SELF-CONTAINED HTML
         </span>
       </header>
-      <div className="vx-research-panel-body">
+      <div className="vx-research-panel-body vx-research-panel-body-flush">
         <iframe
           className="vx-research-frame"
           srcDoc={html}
