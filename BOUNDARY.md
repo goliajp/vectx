@@ -169,6 +169,8 @@ Terms that have project-specific meaning beyond plain English. Keep entries ters
 - **stub / name reservation** — 0.0.0 placeholder packages on npm + crates.io that lock the `vectx` / `vectx-wasm` names without shipping functional code. Sources in `publish-stubs/`.
 - **alpha / v0** — current phase. Pre-SPEC, pre-skill, pre-CLI. Versions written as `0.0.x`. Anything can change.
 - **anti-rot** — CI check that fails when documentation references in this file no longer match the repo (paths, function names, fixture list). See `.github/workflows/check.yml` + `.github/scripts/anti-rot.ts`.
+- **research / playground** — exploration space under `.claude/researches/topic/<id>/` (a `README.md`, optionally a `playground.html`). Notes are frozen-by-date snapshots of design conversations; they're outside anti-rot's authority and don't carry scope commitments. The web Research view renders them inline.
+- **graduate** — the workflow by which a research thread becomes module work: a topic matures (open questions resolved, audit done, playground stabilized or judged unnecessary), then **graduates** — code lands in `src/`, BOUNDARY updates as needed via a `boundary:` commit. The research note stays as the frozen design conversation; future readers see how the decision evolved.
 
 ---
 
