@@ -119,7 +119,7 @@ The following work units are included in v0, grouped by module. Anything else is
 
 ### Orthogonal — not module-bound
 
-- **Web showcase** (`web/`) — landing + interactive importer demo. Visible thesis demonstration + human sanity check. **Not** an end-user IDE or code editor.
+- **Web showcase** (`web/`) — landing + interactive importer demo + research + lab. Visible thesis demonstration + human sanity check. **Not** an end-user IDE or code editor.
 - **Name reservation on npm and crates.io** — stub `0.0.0` placeholders that lock the `vectx` name on both registries. No functional release; consumers still install from git. Stub sources live under `publish-stubs/`.
 
 ---
@@ -170,6 +170,7 @@ Terms that have project-specific meaning beyond plain English. Keep entries ters
 - **alpha / v0** — current phase. Pre-SPEC, pre-skill, pre-CLI. Versions written as `0.0.x`. Anything can change.
 - **anti-rot** — CI check that fails when documentation references in this file no longer match the repo (paths, function names, fixture list). See `.github/workflows/check.yml` + `.github/scripts/anti-rot.ts`.
 - **research / playground** — exploration space under `.claude/researches/topic/<id>/` (a `README.md`, optionally a `playground.html`). Notes are frozen-by-date snapshots of design conversations; they're outside anti-rot's authority and don't carry scope commitments. The web Research view renders them inline.
+- **lab / labs** — active workshop. Lives in `web/src/lab/` as first-class React components (not markdown), so iteration is instant; registry in `web/src/lab/labs.ts`. Each lab is one experiment that's still moving — when its findings *graduate*, code lands in `src/`, the lab migrates to `.claude/researches/` as a frozen design record, and the registry entry is removed. Lab is to Research what a notebook open on the bench is to a published paper.
 - **graduate** — the workflow by which a research thread becomes module work: a topic matures (open questions resolved, audit done, playground stabilized or judged unnecessary), then **graduates** — code lands in `src/`, BOUNDARY updates as needed via a `boundary:` commit. The research note stays as the frozen design conversation; future readers see how the decision evolved.
 
 ---
