@@ -230,7 +230,7 @@ function ActiveNote({ active }: { active: Fixture }) {
       : 'fail'
   const stripped = note.replace(/^[✓⚠✗]\s*/, '')
   const statusLabel =
-    status === 'pass' ? 'WITHIN SCOPE' : status === 'partial' ? 'PHASE 1 GAP' : 'OUT OF SCOPE'
+    status === 'pass' ? 'WITHIN SCOPE' : status === 'partial' ? 'PHASE 1 GAP' : 'NOT YET IMPORTED'
   const noteColor =
     status === 'pass'
       ? 'var(--status-pass)'

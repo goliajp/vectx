@@ -28,12 +28,12 @@ export const FIXTURES: Fixture[] = [
     id: 'firefox',
     label: 'Firefox logo · gradients',
     url: '/firefox.svg',
-    failureNote: '✗ <defs> gradients unresolved — out-of-scope for v0',
+    failureNote: '✗ <defs> gradients not yet imported — partial-import is on the table',
   },
   {
     id: 'inkscape',
     label: 'Inkscape logo · every failure',
     url: '/inkscape.svg',
-    failureNote: '✗ transforms + gradients + clipPath + filter',
+    failureNote: '✗ transforms + gradients + clipPath + filter — none yet imported',
   },
 ]
