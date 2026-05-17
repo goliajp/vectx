@@ -38,6 +38,18 @@ function idFromPath(path: string): string {
   return m ? m[1]! : path
 }
 
+function stripInlineMarkdown(s: string | null): string | null {
+  if (!s) return s
+  return s
+    .replace(/`([^`]+)`/g, '$1') // `code` → code
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // **bold** → bold
+    .replace(/__([^_]+)__/g, '$1') // __bold__
+    .replace(/\*([^*]+)\*/g, '$1') // *italic*
+    .replace(/_([^_]+)_/g, '$1') // _italic_
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // [text](url) → text
+    .trim()
+}
+
 function metaFromReadme(readme: string, id: string): TopicMeta {
   const title = readme.match(/^#\s+(.+?)\s*$/m)?.[1]?.trim() ?? id
   // Table rows: | date | 2026-05-17 |
@@ -45,9 +57,10 @@ function metaFromReadme(readme: string, id: string): TopicMeta {
     const re = new RegExp(`^\\|\\s*${key}\\s*\\|\\s*([^|]+?)\\s*\\|`, 'im')
     return readme.match(re)?.[1]?.trim() ?? null
   }
-  // First paragraph after the metadata table — used as a lede
+  // First paragraph after the TL;DR header — used as a one-line lede in the
+  // meta box. Strip inline markdown so it reads as plain prose.
   const ledeMatch = readme.match(/##\s+TL;DR\s*\n+([^\n]+)/i)
-  const lede = ledeMatch?.[1]?.trim() ?? null
+  const lede = stripInlineMarkdown(ledeMatch?.[1]?.trim() ?? null)
 
   return {
     id,
