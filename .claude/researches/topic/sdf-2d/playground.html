@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>sdf-2d · vectx research</title>
+    <style>
+      :root {
+        --bg: #f1ead4;
+        --fg: #1c1611;
+        --muted: #6c624f;
+        --faint: #978a72;
+        --border: #ddd2b6;
+        --accent: #c2241e;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; background: var(--bg); color: var(--fg); }
+      body {
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 14px;
+        line-height: 1.55;
+        padding: 40px 24px 80px;
+        -webkit-font-smoothing: antialiased;
+      }
+      .shell { max-width: 920px; margin: 0 auto; }
+      .top-bar {
+        display: flex; gap: 8px; align-items: baseline;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+        font-family: ui-monospace, 'SF Mono', Menlo, Monaco, monospace;
+        font-size: 10.5px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+      }
+      .top-bar .crumb { color: var(--muted); }
+      .top-bar .sep { color: var(--faint); }
+      .top-bar .topic { color: var(--fg); font-weight: 700; }
+      h1 {
+        font-size: clamp(36px, 6vw, 56px);
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1;
+        margin: 32px 0 16px;
+      }
+      h1 .accent { color: var(--accent); }
+      .lede {
+        color: var(--muted);
+        max-width: 620px;
+        margin: 0 0 32px;
+        font-size: 15px;
+      }
+      .lede code, .formula code {
+        background: rgba(28, 22, 17, 0.06);
+        padding: 2px 6px;
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 12.5px;
+      }
+      .lede b { color: var(--fg); font-weight: 700; }
+      .stage {
+        display: grid;
+        grid-template-columns: 1fr 280px;
+        gap: 24px;
+        align-items: start;
+        margin: 24px 0;
+      }
+      @media (max-width: 740px) {
+        .stage { grid-template-columns: 1fr; }
+      }
+      canvas {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        display: block;
+        background: #fff;
+        border: 1px solid var(--border);
+      }
+      .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        padding: 18px;
+        border: 1px solid var(--border);
+        background: rgba(221, 210, 182, 0.18);
+      }
+      .row { display: flex; flex-direction: column; gap: 6px; }
+      .row label {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 10px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+      }
+      .row label .v {
+        color: var(--accent);
+        letter-spacing: 0.18em;
+        font-weight: 700;
+      }
+      .row input[type='range'] {
+        width: 100%;
+        accent-color: var(--accent);
+      }
+      .row select {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 11px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--fg);
+        appearance: none;
+      }
+      .row.check {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+      }
+      .row.check label {
+        flex: 1;
+        justify-content: flex-start;
+      }
+      .row.check input[type='checkbox'] {
+        accent-color: var(--accent);
+      }
+      .formula {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 11.5px;
+        line-height: 1.7;
+        color: var(--muted);
+        padding: 14px 16px;
+        border: 1px dashed var(--border);
+        background: rgba(28, 22, 17, 0.025);
+        margin: 32px 0 24px;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .formula b { color: var(--fg); font-weight: 700; }
+      .formula .red { color: var(--accent); }
+      .footnote {
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--faint);
+        margin-top: 32px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+      }
+      .footnote code { color: var(--muted); letter-spacing: 0.08em; text-transform: none; }
+      .err {
+        padding: 24px;
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        font-family: ui-monospace, Menlo, monospace;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="top-bar">
+        <span class="crumb">.claude</span>
+        <span class="sep">/</span>
+        <span class="crumb">researches</span>
+        <span class="sep">/</span>
+        <span class="crumb">topic</span>
+        <span class="sep">/</span>
+        <span class="topic">sdf-2d</span>
+      </div>
+
+      <h1>signed distance fields<span class="accent">.</span></h1>
+
+      <p class="lede">
+        Each shape is a function <code>f(x, y) → distance to surface</code>. Negative inside,
+        positive outside. <b>Boolean ops are pure arithmetic</b> — union = <code>min(a, b)</code>,
+        intersect = <code>max(a, b)</code>, subtract = <code>max(a, −b)</code>. Smooth blending
+        is one extra line and one extra parameter <code>k</code>. This is what vectx could
+        expose as a second primitive family alongside Frame / Circle / Path. See
+        <code>./README.md</code> for the writeup.
+      </p>
+
+      <div class="stage">
+        <canvas id="canvas" width="512" height="512" aria-label="sdf preview"></canvas>
+        <div class="controls">
+          <div class="row">
+            <label>operator</label>
+            <select id="op">
+              <option value="0">union · min(a,b)</option>
+              <option value="1">intersection · max(a,b)</option>
+              <option value="2">subtraction · max(a,−b)</option>
+              <option value="3" selected>smooth union (k)</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>smooth k <span class="v" id="k-val">0.080</span></label>
+            <input id="k" type="range" min="0" max="0.5" step="0.005" value="0.08" />
+          </div>
+          <div class="row check">
+            <input id="iso" type="checkbox" checked />
+            <label for="iso">distance shells (decorative)</label>
+          </div>
+          <div class="row check">
+            <input id="animate" type="checkbox" checked />
+            <label for="animate">animate scene</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="formula"><b>SDF primitives</b>
+  <span class="red">sdCircle(p, r)</span>   = length(p) − r
+  <span class="red">sdBox(p, b)</span>      = length(max(|p|−b, 0)) + min(max((|p|−b).x, (|p|−b).y), 0)
+
+<b>Composition</b>
+  <span class="red">union</span>          a, b      → min(a, b)
+  <span class="red">intersect</span>      a, b      → max(a, b)
+  <span class="red">subtract</span>       a, b      → max(a, −b)
+  <span class="red">smoothUnion</span>    a, b, k   → mix(b, a, h) − k·h·(1−h)
+                            where h = clamp(0.5 + 0.5·(b−a)/k, 0, 1)
+</div>
+
+      <p class="footnote">
+        research · vectx · sdf-2d · single-file webgl2 · no build · open in any modern browser
+      </p>
+    </div>
+
+    <script id="vert" type="x-shader/x-vertex">#version 300 es
+in vec2 aPos;
+void main() {
+  gl_Position = vec4(aPos, 0.0, 1.0);
+}
+</script>
+
+    <script id="frag" type="x-shader/x-fragment">#version 300 es
+precision highp float;
+
+uniform vec2 uResolution;
+uniform float uTime;
+uniform float uK;
+uniform int uOp;
+uniform int uIso;
+
+out vec4 outColor;
+
+// ── primitives ───────────────────────────────────
+float sdCircle(vec2 p, float r) {
+  return length(p) - r;
+}
+float sdBox(vec2 p, vec2 b) {
+  vec2 d = abs(p) - b;
+  return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
+}
+
+// ── composition ──────────────────────────────────
+float opUnion(float a, float b) { return min(a, b); }
+float opInter(float a, float b) { return max(a, b); }
+float opSub  (float a, float b) { return max(a, -b); }
+float opSmoothUnion(float a, float b, float k) {
+  float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+  return mix(b, a, h) - k * h * (1.0 - h);
+}
+
+void main() {
+  // map fragCoord to centered [-1, 1] square
+  vec2 uv = (gl_FragCoord.xy - 0.5 * uResolution) / (0.5 * min(uResolution.x, uResolution.y));
+
+  // scene: a fixed circle on the left, an animated box on the right
+  vec2 c1 = vec2(-0.30, 0.0);
+  vec2 c2 = vec2(0.30 + sin(uTime * 0.8) * 0.18, cos(uTime * 0.6) * 0.20);
+
+  float d1 = sdCircle(uv - c1, 0.36);
+  float d2 = sdBox(uv - c2, vec2(0.30, 0.24));
+
+  float d;
+  if (uOp == 0)      d = opUnion(d1, d2);
+  else if (uOp == 1) d = opInter(d1, d2);
+  else if (uOp == 2) d = opSub(d1, d2);
+  else               d = opSmoothUnion(d1, d2, max(uK, 0.001));
+
+  // ── shading ───────────────────────────────────
+  vec3 paper  = vec3(0.945, 0.918, 0.831);  // --bg
+  vec3 ink    = vec3(0.110, 0.086, 0.067);  // --fg
+  vec3 vermil = vec3(0.761, 0.141, 0.118);  // --accent
+  vec3 wash   = vec3(0.866, 0.823, 0.713);  // mid
+
+  vec3 col = paper;
+
+  // decorative isolines outside the shape — visualize the distance field
+  if (uIso == 1 && d > 0.0) {
+    float band  = abs(sin(d * 24.0));
+    float shell = smoothstep(0.92, 1.0, band) * smoothstep(0.7, 0.0, d);
+    col = mix(col, wash, shell * 0.55);
+  }
+
+  // anti-aliased fill at the boundary
+  float aa = 2.0 / min(uResolution.x, uResolution.y);
+  col = mix(ink, col, smoothstep(-aa, aa, d));
+
+  // thin vermillion outline at the boundary
+  float edge = 1.0 - smoothstep(0.0, aa * 1.8, abs(d));
+  col = mix(col, vermil, edge * 0.55);
+
+  outColor = vec4(col, 1.0);
+}
+</script>
+
+    <script>
+      ;(function () {
+        const canvas = document.getElementById('canvas')
+        const gl = canvas.getContext('webgl2', {
+          antialias: false,
+          premultipliedAlpha: false,
+        })
+        if (!gl) {
+          const shell = document.querySelector('.shell')
+          const err = document.createElement('div')
+          err.className = 'err'
+          err.textContent =
+            'WebGL2 is required. Your browser appears not to support it. Try a recent Chrome / Firefox / Safari.'
+          shell.appendChild(err)
+          return
+        }
+
+        function compile(type, src) {
+          const sh = gl.createShader(type)
+          gl.shaderSource(sh, src.trim())
+          gl.compileShader(sh)
+          if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) {
+            const log = gl.getShaderInfoLog(sh) || 'shader compile failed'
+            throw new Error(log)
+          }
+          return sh
+        }
+        function link(vs, fs) {
+          const p = gl.createProgram()
+          gl.attachShader(p, vs)
+          gl.attachShader(p, fs)
+          gl.linkProgram(p)
+          if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+            throw new Error(gl.getProgramInfoLog(p) || 'program link failed')
+          }
+          return p
+        }
+
+        const program = link(
+          compile(gl.VERTEX_SHADER, document.getElementById('vert').textContent),
+          compile(gl.FRAGMENT_SHADER, document.getElementById('frag').textContent),
+        )
+
+        // single big triangle covers the viewport
+        const buf = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf)
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array([-1, -1, 3, -1, -1, 3]),
+          gl.STATIC_DRAW,
+        )
+        const aPos = gl.getAttribLocation(program, 'aPos')
+        gl.enableVertexAttribArray(aPos)
+        gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0)
+
+        const uRes = gl.getUniformLocation(program, 'uResolution')
+        const uTime = gl.getUniformLocation(program, 'uTime')
+        const uK = gl.getUniformLocation(program, 'uK')
+        const uOp = gl.getUniformLocation(program, 'uOp')
+        const uIso = gl.getUniformLocation(program, 'uIso')
+
+        const kEl = document.getElementById('k')
+        const kVal = document.getElementById('k-val')
+        const opEl = document.getElementById('op')
+        const isoEl = document.getElementById('iso')
+        const animEl = document.getElementById('animate')
+
+        kEl.addEventListener('input', () => {
+          kVal.textContent = parseFloat(kEl.value).toFixed(3)
+        })
+
+        function resize() {
+          const dpr = Math.min(window.devicePixelRatio || 1, 2)
+          const cssW = canvas.clientWidth
+          const cssH = canvas.clientHeight
+          const w = Math.max(1, Math.floor(cssW * dpr))
+          const h = Math.max(1, Math.floor(cssH * dpr))
+          if (canvas.width !== w || canvas.height !== h) {
+            canvas.width = w
+            canvas.height = h
+            gl.viewport(0, 0, w, h)
+          }
+        }
+
+        const startTime = performance.now()
+        function frame() {
+          resize()
+          const t = animEl.checked ? (performance.now() - startTime) / 1000 : 0
+          gl.useProgram(program)
+          gl.uniform2f(uRes, canvas.width, canvas.height)
+          gl.uniform1f(uTime, t)
+          gl.uniform1f(uK, parseFloat(kEl.value))
+          gl.uniform1i(uOp, parseInt(opEl.value, 10))
+          gl.uniform1i(uIso, isoEl.checked ? 1 : 0)
+          gl.drawArrays(gl.TRIANGLES, 0, 3)
+          requestAnimationFrame(frame)
+        }
+        requestAnimationFrame(frame)
+      })()
+    </script>
+  </body>
+</html>
