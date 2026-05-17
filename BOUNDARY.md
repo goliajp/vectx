@@ -1,14 +1,36 @@
-# vectx v0 Boundary
+# vectx v0
 
-> Frozen on 2026-05-16. This file is the scope contract for v0.
-> To re-open, see [Re-open conditions](#re-open-conditions) at the bottom.
-> Do not edit casually. Edits require an explicit commit message tagged `boundary:`.
+> Frozen on 2026-05-16. One file, six sections — covering what vectx is,
+> the names and terms used for it, the four modules, what's in and out
+> of scope, the glossary, and when scope can be re-opened.
+>
+> **Edit rules**:
+> - Changes to **scope** (Modules / In scope / Out of scope / Re-open
+>   conditions) require a commit message tagged `boundary:` and a short
+>   note on what moved and why.
+> - Changes to **naming** or the **glossary** just need to be terse and
+>   accurate; no prefix required.
+> - No silent edits.
 
 ---
 
-## Thesis (L1, one line)
+## Thesis (L1)
 
-vectx is the descriptive language between AI and the vector world. **AI is the primary author** — every spec, error message, and ergonomics choice is downstream of that.
+vectx is the descriptive language between AI and the vector world. **AI is the primary author** — every spec, error message, and ergonomic choice is downstream of that.
+
+---
+
+## Naming
+
+**vectx** is *both* the project name *and* the name of the language the project implements. By default, "vectx" means both at once. Only disambiguate when context forces it:
+
+- "the **vectx project**" / "the vectx repo" — the whole codebase, repo `goliajp/vectx`, tooling, web showcase, etc.
+- "the **vectx DSL**" / "the vectx language" — specifically the descriptive language itself (vocabulary + grammar + semantics).
+- "the **vectx package**" / "the vectx crate" — a specific registry artifact (e.g. `vectx` on npm, `vectx` on crates.io, `vectx-wasm` on either).
+
+Capitalization: **vectx is lowercase everywhere** — file names, package names, prose citations. The only exception is display typography (mastheads like `GOLIA / VECTX`) where ALL CAPS is a *typographic* choice, not a naming change.
+
+---
 
 ## Primary author / consumer (v0)
 
@@ -18,9 +40,24 @@ vectx is the descriptive language between AI and the vector world. **AI is the p
 - Other Claude surfaces (Claude API direct calls, claude.ai web chat) are **not blocked** but are **not tuned for** in v0. They work to the extent that Code/CLI paths work.
 - This is **not** a designer-facing tool. There is no GUI use case in v0.
 
+---
+
+## Modules (architecture)
+
+The project decomposes into four modules. Scope per module is in [In scope](#in-scope-v0) below.
+
+- ❶ **AUTHORING** — the forward path. The DSL's primitives, combinators, and theme system. Code: `src/frame.ts`, `src/theme.ts`, `src/jsx.tsx`. Output: SVG.
+- ❷ **DECODER** — the inverse path. SVG → `recognize` → `emitDsl` → `renderRecognized`. Validates that AUTHORING's vocabulary actually covers real-world SVG. Code: `src/decode.tsx`.
+- ❸ **SPEC** — the language definition Claude reads as a system prompt or skill instruction. The "user manual" of the DSL. *Not yet written.*
+- ❹ **INTEGRATION** — Claude Code skill + CLI command. How a developer reaches vectx through Claude. *Not yet written.*
+
+Orthogonal in-scope items (cross-cutting, not module-bound): fixtures + tests, the `web/` showcase, name reservations on npm + crates.io.
+
+---
+
 ## In scope (v0)
 
-The following work units are included in v0, grouped by module (see [DECLARE.md](./DECLARE.md#modules-architecture) for the module map). Anything else is out of scope until v0 is closed.
+The following work units are included in v0, grouped by module. Anything else is out of scope until v0 is closed.
 
 ### ❶ AUTHORING — forward path
 
@@ -47,6 +84,8 @@ The following work units are included in v0, grouped by module (see [DECLARE.md]
 - **Web showcase** (`web/`) — landing + interactive decoder demo. Visible thesis demonstration + human sanity check. **Not** an end-user IDE or code editor.
 - **Name reservation on npm and crates.io** — stub `0.0.0` placeholders that lock the `vectx` name on both registries. No functional release; consumers still install from git. Stub sources live under `publish-stubs/`.
 
+---
+
 ## Out of scope (v0 — explicit non-goals)
 
 These are deliberately not done in v0. Do not add them to v0 without going through [Re-open conditions](#re-open-conditions).
@@ -62,6 +101,37 @@ These are deliberately not done in v0. Do not add them to v0 without going throu
 - **Business model decisions** — license stays MIT, no SaaS, no dual-license, no paid tier work.
 - **Cross-domain demos** (logo / game asset / print) — README pitches them as the eventual reach, but v0 ships with the 5 existing Wikipedia-style fixtures only.
 
+---
+
+## Glossary
+
+Terms that have project-specific meaning beyond plain English. Keep entries terse. Add a term the moment it picks up project-specific meaning.
+
+### DSL vocabulary
+
+- **DSL** — domain-specific language; a small language designed for one domain. vectx is a DSL for describing vector graphics, as opposed to general-purpose languages like TypeScript or Rust.
+- **embedded DSL** — a DSL hosted inside another language's syntax. vectx today is embedded in TypeScript (`Frame()`, `Circle()`, `grid()` are TS function calls), not parsed as a standalone text format.
+- **forward path** — writing vectx → rendering SVG. Owned by ❶ AUTHORING.
+- **inverse path** — taking existing SVG → recovering vectx that would produce an equivalent rendering. Owned by ❷ DECODER.
+- **round-trip** — `svg → recognize(svg) → emitDsl(rec) → render(rec)` — three boundaries, four artifacts. The proof that the language is expressive enough to describe what it sees.
+- **compile target** — what vectx renders into. v0: only SVG. Out of scope: Canvas, PDF, DXF, G-code, JSON IR, DST embroidery, etc.
+- **recognize / emitDsl / renderRecognized** — the three functions inside ❷ DECODER. `recognize(svg) → Recognized`, `emitDsl(rec) → string`, `renderRecognized(rec) → ReactNode[]`.
+- **fixture** — one of the SVGs in `fixtures/` we test the decoder against (currently 5: `congress`, `standard-model`, `tiger`, `firefox`, `inkscape`). Each carries a `failureNote` describing what should or shouldn't round-trip.
+
+### Roles & audience
+
+- **primary author** — Claude (Anthropic's family). vectx is tuned for Claude's strengths and weaknesses, not for a generic LLM.
+- **primary consumer** — a developer reaching vectx through Claude Code or the Claude CLI. They typically do *not* hand-write vectx; Claude does.
+- **end user** — eventually, the human who looks at the rendered SVG somewhere downstream. v0 does not optimize their experience directly; that's whoever ships the output's job.
+
+### Process
+
+- **stub / name reservation** — 0.0.0 placeholder packages on npm + crates.io that lock the `vectx` / `vectx-wasm` names without shipping functional code. Sources in `publish-stubs/`.
+- **alpha / v0** — current phase. Pre-SPEC, pre-skill, pre-CLI. Versions written as `0.0.x`. Anything can change.
+- **anti-rot** — CI check that fails when documentation references in this file no longer match the repo (paths, function names, fixture list). See `.github/workflows/check.yml` + `.github/scripts/anti-rot.ts`.
+
+---
+
 ## Re-open conditions
 
 This boundary is frozen. The following are the only valid reasons to re-open negotiation on what v0 includes:
@@ -71,4 +141,4 @@ This boundary is frozen. The following are the only valid reasons to re-open neg
 3. The project owner explicitly decides to open a second LLM, second compile target, or second client surface.
 4. A v0 in-scope item turns out to be impossible or load-bearing-blocked, requiring scope renegotiation.
 
-**Change process**: edits to this file must land in a commit whose message starts with `boundary:` and explains which clause moved and why. No silent edits.
+Scope changes land in a `boundary:`-prefixed commit explaining which clause moved and why.

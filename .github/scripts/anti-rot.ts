@@ -4,14 +4,15 @@
  *
  * Runs in CI on push / PR to develop and master. Fails when:
  *
- *   1. A markdown doc (README / BOUNDARY / DECLARE) references a project
- *      path (src/..., web/..., tests/..., fixtures/..., publish-stubs/...,
+ *   1. A markdown doc (README / BOUNDARY) references a project path
+ *      (src/..., web/..., tests/..., fixtures/..., publish-stubs/...,
  *      .github/..., or another top-level *.md) that no longer exists.
- *   2. A function name claimed in DECLARE.md (recognize, emitDsl,
- *      renderRecognized, parseSvg) is no longer findable anywhere in src/.
- *   3. The fixture-name list claimed in DECLARE.md / BOUNDARY.md goes
- *      out of sync with the .svg files in fixtures/ — either direction:
- *      claimed-but-missing, or on-disk-but-undeclared.
+ *   2. A function name claimed in BOUNDARY's glossary (recognize,
+ *      emitDsl, renderRecognized, parseSvg) is no longer findable
+ *      anywhere in src/.
+ *   3. The fixture-name list claimed in BOUNDARY goes out of sync with
+ *      the .svg files in fixtures/ — either direction: claimed-but-
+ *      missing, or on-disk-but-undeclared.
  *
  * This script is intentionally dependency-free. Add new check functions
  * here when a new class of rot starts mattering.
@@ -35,7 +36,7 @@ const heading = (s: string) => console.log(`\n── ${s} ──`)
 // ─────────────────────────────────────────────────────────────────────
 // Load docs
 // ─────────────────────────────────────────────────────────────────────
-const DOC_NAMES = ['README.md', 'BOUNDARY.md', 'DECLARE.md']
+const DOC_NAMES = ['README.md', 'BOUNDARY.md']
 const docs = DOC_NAMES.map((n) => ({
   name: n,
   path: join(REPO_ROOT, n),
@@ -58,7 +59,7 @@ heading('check 1 · referenced paths exist')
 // Deliberately EXCLUDES paths starting with `~/` (those refer to user-home like
 // ~/.claude/skills/vectx/ which is documented expected install location).
 const PATH_RE =
-  /(?:^|[\s(`])((?:\.\/)?(?:src|web|tests|fixtures|publish-stubs|\.github)\/(?:[\w./-]+)?|\b(?:README|BOUNDARY|DECLARE|LICENSE)\.md\b)(?=[\s).,;:`]|$)/gm
+  /(?:^|[\s(`])((?:\.\/)?(?:src|web|tests|fixtures|publish-stubs|\.github)\/(?:[\w./-]+)?|\b(?:README|BOUNDARY|LICENSE)\.md\b)(?=[\s).,;:`]|$)/gm
 
 const referenced = new Map<string, string[]>() // path -> [doc names that mention it]
 for (const doc of docs) {
@@ -80,11 +81,11 @@ for (const p of sortedRefs) {
 if (referenced.size === 0) console.log('  (no paths found — regex might be too tight)')
 
 // ─────────────────────────────────────────────────────────────────────
-// Check 2 — function names claimed in DECLARE.md exist in src/
+// Check 2 — function names claimed in BOUNDARY glossary exist in src/
 // ─────────────────────────────────────────────────────────────────────
-heading('check 2 · DECLARE function-name claims resolve in src/')
+heading('check 2 · BOUNDARY glossary function-name claims resolve in src/')
 
-const declareText = docs.find((d) => d.name === 'DECLARE.md')?.text ?? ''
+const boundaryText = docs.find((d) => d.name === 'BOUNDARY.md')?.text ?? ''
 const CLAIMED_FNS = ['parseSvg', 'recognize', 'emitDsl', 'renderRecognized']
 
 // Concatenate all src/*.ts(x) into one string (cheap; src/ is small).
@@ -97,13 +98,13 @@ const srcBlob = existsSync(srcDir)
   : ''
 
 for (const fn of CLAIMED_FNS) {
-  if (!declareText.includes(fn)) continue
+  if (!boundaryText.includes(fn)) continue
   if (new RegExp(`\\b${fn}\\b`).test(srcBlob)) ok(`${fn}  (found in src/)`)
-  else fail(`MISSING in src/: ${fn}  (DECLARE.md claims it as a decoder entry)`)
+  else fail(`MISSING in src/: ${fn}  (BOUNDARY glossary claims it as a decoder entry)`)
 }
 
 // ─────────────────────────────────────────────────────────────────────
-// Check 3 — fixture list in docs vs files on disk
+// Check 3 — fixture list in BOUNDARY vs files on disk
 // ─────────────────────────────────────────────────────────────────────
 heading('check 3 · fixtures declared ⇔ on disk')
 
@@ -115,22 +116,19 @@ const onDisk = existsSync(fixturesDir)
       .sort()
   : []
 
-const boundaryText = docs.find((d) => d.name === 'BOUNDARY.md')?.text ?? ''
-const docsBlob = declareText + '\n' + boundaryText
-
-// Names we currently expect docs to mention (alpha v0).
+// Names we currently expect BOUNDARY to mention (alpha v0).
 const declaredFixtures = ['congress', 'standard-model', 'tiger', 'firefox', 'inkscape']
 
 for (const name of declaredFixtures) {
-  const inDocs = docsBlob.includes(name)
+  const inDocs = boundaryText.includes(name)
   const present = onDisk.includes(name)
   if (inDocs && present) ok(`${name}.svg  (declared + on disk)`)
-  else if (inDocs && !present) fail(`MISSING on disk: fixtures/${name}.svg  (claimed in docs)`)
+  else if (inDocs && !present) fail(`MISSING on disk: fixtures/${name}.svg  (claimed in BOUNDARY)`)
 }
 
 for (const file of onDisk) {
   if (!declaredFixtures.includes(file))
-    fail(`UNDECLARED on disk: fixtures/${file}.svg  (add to DECLARE.md fixture list?)`)
+    fail(`UNDECLARED on disk: fixtures/${file}.svg  (add to BOUNDARY fixture list?)`)
 }
 if (onDisk.length === 0) console.log('  (no fixtures/*.svg on disk — skipped)')
 
