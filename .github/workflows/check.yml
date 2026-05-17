@@ -1,0 +1,53 @@
+name: check
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+    branches: [develop, master]
+  workflow_dispatch:
+
+jobs:
+  anti-rot:
+    name: anti-rot · docs ↔ code consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: run anti-rot script
+        run: bun .github/scripts/anti-rot.ts
+
+  lib:
+    name: lib · tsc + bun test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: install
+        run: bun install
+      - name: typecheck
+        run: bunx tsc --noEmit
+      - name: test
+        run: bun test
+
+  web:
+    name: web · tsc + vite build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: install
+        working-directory: web
+        run: bun install
+      - name: typecheck
+        working-directory: web
+        run: bunx tsc --noEmit
+      - name: build
+        working-directory: web
+        run: bunx vite build
