@@ -20,16 +20,30 @@ vectx is the descriptive language between AI and the vector world. **AI is the p
 
 ## In scope (v0)
 
-The following work units are included in v0. Anything else is out of scope until v0 is closed.
+The following work units are included in v0, grouped by module (see [DECLARE.md](./DECLARE.md#modules-architecture) for the module map). Anything else is out of scope until v0 is closed.
+
+### ❶ AUTHORING — forward path
 
 - **DSL TS lib** — Frame / primitives / grids / boolean ops (`src/frame.ts`). API surface frozen for v0.
 - **Theme system** (`src/theme.ts`) — TokenRef / composeThemes / applyTheme. Frozen for v0.
-- **Inverse decoder** (`src/decode.tsx`) — SVG → vectx DSL. The validation surface; frozen for v0.
 - **SVG forward compile target** — the only compile target in v0.
-- **DSL spec doc** — written *for Claude*, intended to be loaded as system prompt / skill instruction.
+
+### ❷ DECODER — inverse path
+
+- **Inverse decoder** (`src/decode.tsx`) — SVG → vectx DSL. The validation surface; frozen for v0.
 - **Test suite** — fixtures-based unit tests (currently 5) **plus** at least one cold-LLM e2e test where Claude writes vectx through the spec and the output renders.
+
+### ❸ SPEC — language definition
+
+- **DSL spec doc** — written *for Claude*, intended to be loaded as system prompt / skill instruction.
+
+### ❹ INTEGRATION — entry points
+
 - **CLI entry** — `vectx render <file>` (or equivalent) that compiles vectx code to SVG. Distributed alongside the lib.
 - **Claude skill entry** — `~/.claude/skills/vectx/` package so Claude Code auto-discovers and uses vectx without prompting setup.
+
+### Orthogonal — not module-bound
+
 - **Web showcase** (`web/`) — landing + interactive decoder demo. Visible thesis demonstration + human sanity check. **Not** an end-user IDE or code editor.
 - **Name reservation on npm and crates.io** — stub `0.0.0` placeholders that lock the `vectx` name on both registries. No functional release; consumers still install from git. Stub sources live under `publish-stubs/`.
 
