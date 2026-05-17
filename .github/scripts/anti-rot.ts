@@ -100,7 +100,7 @@ const srcBlob = existsSync(srcDir)
 for (const fn of CLAIMED_FNS) {
   if (!boundaryText.includes(fn)) continue
   if (new RegExp(`\\b${fn}\\b`).test(srcBlob)) ok(`${fn}  (found in src/)`)
-  else fail(`MISSING in src/: ${fn}  (BOUNDARY glossary claims it as a decoder entry)`)
+  else fail(`MISSING in src/: ${fn}  (BOUNDARY glossary claims it as an importer entry)`)
 }
 
 // ─────────────────────────────────────────────────────────────────────

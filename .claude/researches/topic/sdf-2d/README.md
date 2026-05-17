@@ -107,7 +107,7 @@ No build, no deps, no server. Just open the file. Works on file:// in any browse
 
 1. **SVG compile target.** Tessellate → `<path>` via marching squares (clean, larger file) or rasterize → `<image>` (lossy at zoom)? A hybrid is possible.
 2. **API namespace.** Separate `sdf.circle / sdf.box` family, or extend existing primitives with an `.sdf` mode? The first is more explicit; the second composes better with `Frame`-style scaffolding.
-3. **Decoder side.** Can we *recognize* SDF intent in existing SVG? Direct decoding no — but we could detect "this is two shapes plus a Gaussian blur faking a smooth union" and emit `sdf.smoothUnion(...)` in DSL output. Phase-2 decoder feature.
+3. **Importer side.** Can we *recognize* SDF intent in existing SVG? Direct decoding no — but we could detect "this is two shapes plus a Gaussian blur faking a smooth union" and emit `sdf.smoothUnion(...)` in DSL output. Phase-2 importer feature.
 4. **Differentiable angle.** SDF formulas are smooth + composable → naturally differentiable. Gradient-descent target images to SDF parameters is the DiffVG line of research. Its own topic; see "related" below.
 
 ## Related topics (not yet written, candidates)
