@@ -2,12 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 
 import { DecoderPanel } from './components/decoder-panel'
 import { FIXTURES, type Fixture } from './fixtures'
+import { LabSection } from './lab/lab-section'
 import { ResearchSection } from './research/research-section'
 
 const SEP = '·'
 const REPO_URL = 'https://github.com/goliajp/vectx'
 
-type View = 'home' | 'authoring' | 'renderer' | 'importer' | 'integration' | 'research'
+type View = 'home' | 'authoring' | 'renderer' | 'importer' | 'integration' | 'lab' | 'research'
 
 type NavItem = {
   id: View
@@ -16,12 +17,14 @@ type NavItem = {
 }
 
 // HOME is reached by clicking the brand (top-left); not listed in the nav.
-// Module order matches BOUNDARY's ❶❷❸❹; RESEARCH appended as orthogonal.
+// Module order matches BOUNDARY's ❶❷❸❹; LAB + RESEARCH appended as
+// orthogonal (LAB active workshop, RESEARCH frozen design notes).
 const NAV_ITEMS: NavItem[] = [
   { id: 'authoring', label: 'AUTHORING', ready: false },
   { id: 'renderer', label: 'RENDERER', ready: false },
   { id: 'importer', label: 'IMPORTER', ready: true },
   { id: 'integration', label: 'INTEGRATION', ready: false },
+  { id: 'lab', label: 'LAB', ready: true },
   { id: 'research', label: 'RESEARCH', ready: true },
 ]
 
@@ -65,6 +68,7 @@ export function App() {
         {view === 'importer' && (
           <Importer activeId={activeId} setActiveId={setActiveId} active={active} />
         )}
+        {view === 'lab' && <LabSection />}
         {view === 'research' && <ResearchSection />}
         {(view === 'authoring' || view === 'renderer' || view === 'integration') && (
           <Placeholder id={view} />
