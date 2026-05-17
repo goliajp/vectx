@@ -7,7 +7,7 @@ import { ResearchSection } from './research/research-section'
 const SEP = '·'
 const REPO_URL = 'https://github.com/goliajp/vectx'
 
-type View = 'home' | 'authoring' | 'decoder' | 'spec' | 'integration' | 'research'
+type View = 'home' | 'authoring' | 'renderer' | 'importer' | 'integration' | 'research'
 
 type NavItem = {
   id: View
@@ -16,10 +16,11 @@ type NavItem = {
 }
 
 // HOME is reached by clicking the brand (top-left); not listed in the nav.
+// Module order matches BOUNDARY's ❶❷❸❹; RESEARCH appended as orthogonal.
 const NAV_ITEMS: NavItem[] = [
   { id: 'authoring', label: 'AUTHORING', ready: false },
-  { id: 'decoder', label: 'DECODER', ready: true },
-  { id: 'spec', label: 'SPEC', ready: false },
+  { id: 'renderer', label: 'RENDERER', ready: false },
+  { id: 'importer', label: 'IMPORTER', ready: true },
   { id: 'integration', label: 'INTEGRATION', ready: false },
   { id: 'research', label: 'RESEARCH', ready: true },
 ]
@@ -28,7 +29,9 @@ const VIEW_IDS = new Set<View>(['home', ...NAV_ITEMS.map((n) => n.id)])
 
 function parseHashView(): View {
   if (typeof window === 'undefined') return 'home'
-  const h = window.location.hash.replace(/^#/, '')
+  const raw = window.location.hash.replace(/^#/, '')
+  // Back-compat: #decoder still routes to importer.
+  const h = raw === 'decoder' ? 'importer' : raw
   return VIEW_IDS.has(h as View) ? (h as View) : 'home'
 }
 
@@ -59,11 +62,11 @@ export function App() {
       <TopBar active={view} set={setView} />
       <main className="vx-main">
         {view === 'home' && <Hero set={setView} />}
-        {view === 'decoder' && (
-          <Demo activeId={activeId} setActiveId={setActiveId} active={active} />
+        {view === 'importer' && (
+          <Importer activeId={activeId} setActiveId={setActiveId} active={active} />
         )}
         {view === 'research' && <ResearchSection />}
-        {(view === 'authoring' || view === 'spec' || view === 'integration') && (
+        {(view === 'authoring' || view === 'renderer' || view === 'integration') && (
           <Placeholder id={view} />
         )}
       </main>
@@ -134,18 +137,18 @@ function Hero({ set }: { set: (v: View) => void }) {
       <h1 className="vx-h1">vectx</h1>
       <p className="vx-thesis">The descriptive language between AI and the vector world.</p>
       <p className="vx-sub">
-        AI is the primary author. Reached through Claude Code or the Claude CLI. The web
-        site is split by module — pick from the navigation above. The Decoder shows the
-        round-trip on real-world SVGs; Research collects exploration notes and live
-        playgrounds; the other three modules are scoped in BOUNDARY but not yet written.
+        AI is the primary author. Reached through Claude Code or the Claude CLI. The site
+        is split by module — pick from the navigation above. Importer shows the round-trip
+        on real-world SVGs; Research collects exploration notes and live playgrounds;
+        Authoring / Renderer / Integration are scoped in BOUNDARY but not yet written.
       </p>
       <div className="vx-cta-row">
         <button
           type="button"
           className="mono vx-cta-pill"
-          onClick={() => set('decoder')}
+          onClick={() => set('importer')}
         >
-          OPEN THE DECODER →
+          OPEN THE IMPORTER →
         </button>
         <button
           type="button"
@@ -167,7 +170,7 @@ function Hero({ set }: { set: (v: View) => void }) {
   )
 }
 
-function Demo({
+function Importer({
   activeId,
   setActiveId,
   active,
@@ -179,7 +182,7 @@ function Demo({
   return (
     <section className="vx-demo">
       <header className="vx-demo-head">
-        <h2 className="mono vx-demo-title">DECODER {SEP} SVG → DSL → SVG</h2>
+        <h2 className="mono vx-demo-title">IMPORTER {SEP} SVG → VECTX → SVG</h2>
         <p className="mono vx-demo-sub">FIVE FIXTURES {SEP} DECODED IN-BROWSER {SEP} NO SERVER</p>
       </header>
       <FixturePicker activeId={activeId} setActiveId={setActiveId} />
@@ -251,21 +254,21 @@ const PLACEHOLDER_META: Record<string, { title: string; description: string }> =
   authoring: {
     title: 'Authoring',
     description:
-      'The forward path — primitives (Frame · Circle · Path · grid), boolean ops, and the theme system. Code lives at src/frame.ts and src/theme.ts. This is what Claude writes vectx as. A dedicated page is on the BOUNDARY list but not yet written.',
+      'The IR vocabulary — primitives (Frame · Circle · Path · grid), boolean ops, and the theme system. Code lives at src/frame.ts and src/theme.ts. This is what Claude writes vectx as. A dedicated page is on the BOUNDARY list but not yet written.',
   },
-  spec: {
-    title: 'Spec',
+  renderer: {
+    title: 'Renderer',
     description:
-      'The language definition Claude reads as a system prompt or skill instruction — the "user manual" of the DSL. v0 in-scope, not yet written.',
+      'IR → output port. Turns a vectx tree into a renderable format (v0: SVG only). Currently inlined inside Authoring (src/frame.ts + src/jsx.tsx); conceptual split now, code split is a v1 refactor. Future Canvas / PDF / DXF render targets are sibling plugins.',
   },
   integration: {
     title: 'Integration',
     description:
-      'Claude Code skill + CLI command. How a developer reaches vectx through Claude in practice. v0 in-scope, not yet written.',
+      'The LLM-facing module: the spec document Claude reads, the Claude Code skill package that bundles it, and the CLI fallback path. Without this module the IR exists but Claude can\'t reach it. None of the three are written yet.',
   },
 }
 
-function Placeholder({ id }: { id: 'authoring' | 'spec' | 'integration' }) {
+function Placeholder({ id }: { id: 'authoring' | 'renderer' | 'integration' }) {
   const meta = PLACEHOLDER_META[id]
   if (!meta) return null
   return (

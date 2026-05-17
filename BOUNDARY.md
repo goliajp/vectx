@@ -1,8 +1,8 @@
 # vectx v0
 
-> Frozen on 2026-05-16. One file, six sections — covering what vectx is,
-> the names and terms used for it, the four modules, what's in and out
-> of scope, the glossary, and when scope can be re-opened.
+> Frozen on 2026-05-16, restructured 2026-05-18 to a four-module
+> decomposition (AUTHORING / RENDERER / IMPORTER / INTEGRATION) plus
+> a normalized-IR architecture pattern. One file, seven sections.
 >
 > **Edit rules**:
 > - Changes to **scope** (Modules / In scope / Out of scope / Re-open
@@ -17,6 +17,30 @@
 ## Thesis (L1)
 
 vectx is the descriptive language between AI and the vector world. **AI is the primary author** — every spec, error message, and ergonomic choice is downstream of that.
+
+---
+
+## Architecture pattern
+
+vectx follows the **normalized internal representation + edge adapters** pattern. The same pattern shows up across software:
+
+| domain                  | library / tool             | normalized IR             |
+|-------------------------|----------------------------|---------------------------|
+| time                    | dayjs / Luxon / Temporal   | `Dayjs` / `DateTime`      |
+| documents               | Pandoc                     | Pandoc native AST         |
+| media                   | FFmpeg                     | AVFrame / packet pipeline |
+| compilation             | LLVM                       | LLVM IR                   |
+| javascript AST          | Babel                      | ESTree                    |
+| **vector graphics**     | **vectx**                  | **vectx tree**            |
+
+The library's value lives in the IR; the I/O adapters are how it earns its keep. For vectx specifically:
+
+- **❶ AUTHORING** owns the IR. The pleasure of writing into it is the moat.
+- **❷ RENDERER** is the *IR → output* port; future Canvas / PDF / DXF / glTF are sibling render plugins.
+- **❸ IMPORTER** is the *input → IR* port; future DXF / PDF / AI parsers are sibling import plugins.
+- **❹ INTEGRATION** is the module unique to vectx-as-an-AI-DSL: how the IR's author (Claude) gets access. dayjs needs no such thing because its user is a human reading the npm README; vectx's user is Claude, and the spec doc + skill + CLI are how Claude learns and reaches the IR.
+
+The **round-trip** — `source-svg → IMPORTER → vectx → RENDERER → reconstructed-svg` — is the continuous integrity test that the IR is expressive enough to describe what it sees. Most normalized-IR systems eventually converge on this same proof.
 
 ---
 
@@ -46,10 +70,10 @@ Capitalization: **vectx is lowercase everywhere** — file names, package names,
 
 The project decomposes into four modules. Scope per module is in [In scope](#in-scope-v0) below.
 
-- ❶ **AUTHORING** — the forward path. The DSL's primitives, combinators, and theme system. Code: `src/frame.ts`, `src/theme.ts`, `src/jsx.tsx`. Output: SVG.
-- ❷ **DECODER** — the inverse path. SVG → `recognize` → `emitDsl` → `renderRecognized`. Validates that AUTHORING's vocabulary actually covers real-world SVG. Code: `src/decode.tsx`.
-- ❸ **SPEC** — the language definition Claude reads as a system prompt or skill instruction. The "user manual" of the DSL. *Not yet written.*
-- ❹ **INTEGRATION** — Claude Code skill + CLI command. How a developer reaches vectx through Claude. *Not yet written.*
+- ❶ **AUTHORING** — the IR vocabulary. vectx's primitives, combinators, and theme system. Code: `src/frame.ts`, `src/theme.ts`, `src/jsx.tsx`. Output: a vectx tree.
+- ❷ **RENDERER** — IR → output port. Turns a vectx tree into a renderable format. v0: SVG only. Sibling render targets (Canvas / PDF / DXF / …) live here in v1+. Currently entangled with AUTHORING in `src/frame.ts`; conceptual split now, code split is a v1 refactor.
+- ❸ **IMPORTER** — input → IR port. Takes an external vector format (today: SVG) and recovers a vectx tree. Code: `src/decode.tsx` (`parseSvg` / `recognize` / `emitDsl`, plus `renderRecognized` which calls into RENDERER for round-trip verification). Sibling importers (DXF / PDF / AI / …) live here in v1+.
+- ❹ **INTEGRATION** — everything LLM-facing. The spec doc Claude reads, the Claude Code skill package, and the CLI. Without this module, the IR exists but Claude can't reach it. *Spec doc + skill + CLI not yet written.*
 
 Orthogonal in-scope items (cross-cutting, not module-bound): fixtures + tests, the `web/` showcase, name reservations on npm + crates.io.
 
@@ -59,29 +83,29 @@ Orthogonal in-scope items (cross-cutting, not module-bound): fixtures + tests, t
 
 The following work units are included in v0, grouped by module. Anything else is out of scope until v0 is closed.
 
-### ❶ AUTHORING — forward path
+### ❶ AUTHORING — the IR
 
 - **DSL TS lib** — Frame / primitives / grids / boolean ops (`src/frame.ts`). API surface frozen for v0.
 - **Theme system** (`src/theme.ts`) — TokenRef / composeThemes / applyTheme. Frozen for v0.
-- **SVG forward compile target** — the only compile target in v0.
 
-### ❷ DECODER — inverse path
+### ❷ RENDERER — IR → output
 
-- **Inverse decoder** (`src/decode.tsx`) — SVG → vectx DSL. The validation surface; frozen for v0.
+- **SVG render** — vectx tree → SVG. The only output format in v0. Currently inlined in `src/frame.ts` and `src/jsx.tsx` (React JSX); conceptual split from AUTHORING now, code split is a v1 refactor.
+
+### ❸ IMPORTER — input → IR
+
+- **SVG importer** (`src/decode.tsx`) — SVG → vectx tree. The validation surface; frozen for v0.
 - **Test suite** — fixtures-based unit tests (currently 5) **plus** at least one cold-LLM e2e test where Claude writes vectx through the spec and the output renders.
 
-### ❸ SPEC — language definition
+### ❹ INTEGRATION — LLM-facing
 
-- **DSL spec doc** — written *for Claude*, intended to be loaded as system prompt / skill instruction.
-
-### ❹ INTEGRATION — entry points
-
-- **CLI entry** — `vectx render <file>` (or equivalent) that compiles vectx code to SVG. Distributed alongside the lib.
-- **Claude skill entry** — `~/.claude/skills/vectx/` package so Claude Code auto-discovers and uses vectx without prompting setup.
+- **Spec document** — written *for Claude*, intended to be loaded as system prompt / skill instruction. Defines the IR vocabulary in a form an LLM can compress and recall.
+- **Claude skill entry** — `~/.claude/skills/vectx/` package that bundles the spec + call shim, so Claude Code auto-discovers and uses vectx.
+- **CLI entry** — `vectx render <file>` (or equivalent). Same vocabulary, shell-distributed; fallback / validation path.
 
 ### Orthogonal — not module-bound
 
-- **Web showcase** (`web/`) — landing + interactive decoder demo. Visible thesis demonstration + human sanity check. **Not** an end-user IDE or code editor.
+- **Web showcase** (`web/`) — landing + interactive importer demo. Visible thesis demonstration + human sanity check. **Not** an end-user IDE or code editor.
 - **Name reservation on npm and crates.io** — stub `0.0.0` placeholders that lock the `vectx` name on both registries. No functional release; consumers still install from git. Stub sources live under `publish-stubs/`.
 
 ---
@@ -111,11 +135,13 @@ Terms that have project-specific meaning beyond plain English. Keep entries ters
 
 - **DSL** — domain-specific language; a small language designed for one domain. vectx is a DSL for describing vector graphics, as opposed to general-purpose languages like TypeScript or Rust.
 - **embedded DSL** — a DSL hosted inside another language's syntax. vectx today is embedded in TypeScript (`Frame()`, `Circle()`, `grid()` are TS function calls), not parsed as a standalone text format.
-- **forward path** — writing vectx → rendering SVG. Owned by ❶ AUTHORING.
-- **inverse path** — taking existing SVG → recovering vectx that would produce an equivalent rendering. Owned by ❷ DECODER.
-- **round-trip** — `svg → recognize(svg) → emitDsl(rec) → render(rec)` — three boundaries, four artifacts. The proof that the language is expressive enough to describe what it sees.
-- **compile target** — what vectx renders into. v0: only SVG. Out of scope: Canvas, PDF, DXF, G-code, JSON IR, DST embroidery, etc.
-- **recognize / emitDsl / renderRecognized** — the three functions inside ❷ DECODER. `recognize(svg) → Recognized`, `emitDsl(rec) → string`, `renderRecognized(rec) → ReactNode[]`.
+- **IR** / **vectx tree** — the in-memory normalized representation a vectx program reduces to. The shared substrate that ❶ AUTHORING produces, ❷ RENDERER consumes, and ❸ IMPORTER reconstructs.
+- **forward path** — writing vectx → vectx tree → output format. Spans ❶ AUTHORING + ❷ RENDERER.
+- **inverse path** — taking an external vector format → vectx tree. Owned by ❸ IMPORTER.
+- **round-trip** — `source-svg → IMPORTER → vectx tree → RENDERER → reconstructed-svg` — the proof that the IR is expressive enough to describe what it sees.
+- **compile target** / **render target** — output format that ❷ RENDERER produces. v0: SVG only. Out of scope: Canvas, PDF, DXF, G-code, JSON IR, DST embroidery, etc. Each future target is a sibling plugin under RENDERER.
+- **import format** — external vector format that ❸ IMPORTER consumes. v0: SVG only. v1+: DXF, PDF, AI, EPS — siblings under IMPORTER.
+- **recognize / emitDsl / renderRecognized** — the three functions inside ❸ IMPORTER. `recognize(svg) → Recognized`, `emitDsl(rec) → string`, `renderRecognized(rec) → ReactNode[]` (the last one borrows ❷ RENDERER to draw the recognized tree back as SVG).
 - **fixture** — one of the SVGs in `fixtures/` we test the decoder against (currently 5: `congress`, `standard-model`, `tiger`, `firefox`, `inkscape`). Each carries a `failureNote` describing what should or shouldn't round-trip.
 
 ### Roles & audience

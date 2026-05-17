@@ -42,7 +42,7 @@ These are entry points, not commitments:
 
 - **❶ AUTHORING** adds `Glyph` (codepoint + outline + metrics) and `Typeface` (a set of glyphs sharing theme). `theme` tokens already match the "design family rules" vocabulary needed.
 - **Variable axis ≈ theme axis**. A vectx `theme` parameterized over `weight: 0..1` interpolates all the tokens — extending that to glyph outlines is the same idea applied to geometry.
-- **❷ DECODER**: parsing a TTF/OTF into vectx form has independent business value (font reverse engineering / forking / variation is a real workflow, less ethically clean than SVG round-trip but the demand exists).
+- **❸ IMPORTER**: parsing a TTF/OTF into vectx form has independent business value (font reverse engineering / forking / variation is a real workflow, less ethically clean than SVG round-trip but the demand exists).
 - **SDF research adjacency**: glyphs rendered via SDF (specifically MSDF — multi-channel SDF — Valve / Mapbox 2007+) give scale-free GPU rendering. vectx → MSDF → screen is a clean pipeline.
 - **DiffVG adjacency**: differentiable interpolation in axis space is exactly variable fonts. Optimizing the axis position to match a target raster image is a known technique.
 
