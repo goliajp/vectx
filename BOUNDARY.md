@@ -44,6 +44,20 @@ The **round-trip** — `source-svg → IMPORTER → vectx → RENDERER → recon
 
 ---
 
+## Where vectx diverges from those precedents
+
+The structural shape — normalized IR + edge adapters — is the same. The **purpose** is not. FFmpeg / Pandoc / LLVM / Babel are *transcoders*: they translate existing artifacts between formats. vectx is a *creation* tool: the IR is the medium where Claude writes vector assets that didn't exist before. Three consequences follow:
+
+- **The forward path is primary.** AUTHORING + RENDERER is the main event. Claude writing into the IR is the act of value creation; the rest is support.
+
+- **IMPORTER is secondary, and allowed to be lossy when it conflicts with AUTHORING.** The round-trip is not lossless and need not be. When supporting an SVG corner-case would clutter the AUTHORING vocabulary, IMPORTER takes the loss and refuses to round-trip that case. The fixtures already encode this — `firefox` and `inkscape` are not bugs to fix; they're "✗ out of scope" markers. IMPORTER's three sources of value are (a) round-trip validating the IR is expressive enough, (b) bootstrapping Claude with existing SVG as examples, (c) migrating prior work for users coming from elsewhere — none of these are why the project exists.
+
+- **The IR's design target is cognitive ergonomics for an LLM author**, not fidelity to existing data. Token density, compositional predictability, and forgiveness of partial knowledge dominate over preservation completeness.
+
+Two precedents capture different halves of this. **dayjs** is the closest cousin for the *manipulation surface* — its `Dayjs` objects are created and edited, not merely transcoded. **Markdown** is the closest cousin for the *language asymmetry with the world* — Markdown is deliberately a smaller language than HTML, Markdown → HTML is comprehensive, HTML → Markdown is lossy by design, and nobody calls that a defect. **vectx is to SVG what Markdown is to HTML**: a new, smaller, AI-friendlier format that does *not* try to be a superset of what it converts into. The lossy importer is the price; an LLM-shaped vocabulary is the prize.
+
+---
+
 ## Naming
 
 **vectx** is *both* the project name *and* the name of the language the project implements. By default, "vectx" means both at once. Only disambiguate when context forces it:
