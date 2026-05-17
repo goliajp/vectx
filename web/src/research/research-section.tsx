@@ -10,7 +10,7 @@ export function ResearchSection() {
   const active = RESEARCH_TOPICS.find((t) => t.id === activeId) ?? RESEARCH_TOPICS[0]
 
   return (
-    <section id="research" className="vx-research">
+    <section className="vx-research">
       <header className="vx-research-head">
         <h2 className="mono vx-research-title">RESEARCH {SEP} EXPLORATION NOTES</h2>
         <p className="mono vx-research-sub">
