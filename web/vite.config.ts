@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
+const repoRoot = resolve(import.meta.dirname, '..')
+
 export default defineConfig({
   base: '/',
   plugins: [tailwindcss(), react()],
@@ -16,6 +18,11 @@ export default defineConfig({
   },
   server: {
     port: 5180,
+    fs: {
+      // research notes + playgrounds live at <repo>/.claude/researches/,
+      // outside web/'s default fs root. allow vite to read them.
+      allow: [repoRoot],
+    },
   },
   test: {
     environment: 'jsdom',

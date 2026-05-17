@@ -35,12 +35,12 @@ A signed distance field is a function `f: ℝ² → ℝ`. For a point `p`:
 
 Classical 2D primitive formulas (all canonical, originally from Inigo Quilez):
 
-| primitive       | formula                                                         |
-|-----------------|-----------------------------------------------------------------|
-| `sdCircle(p,r)` | `length(p) − r`                                                 |
-| `sdBox(p,b)`    | `length(max(|p|−b, 0)) + min(max((|p|−b).x, (|p|−b).y), 0)`     |
-| `sdLine(p,a,b)` | distance from `p` to segment `ab`                               |
-| `sdPolygon`     | iterative — distance to nearest polygon edge                    |
+| primitive       | formula                                                              |
+|-----------------|----------------------------------------------------------------------|
+| `sdCircle(p,r)` | `length(p) − r`                                                      |
+| `sdBox(p,b)`    | `length(max(abs(p)−b, 0)) + min(max((abs(p)−b).x, (abs(p)−b).y), 0)` |
+| `sdLine(p,a,b)` | distance from `p` to segment `ab`                                    |
+| `sdPolygon`     | iterative — distance to nearest polygon edge                         |
 
 Every shape commonly used in vector graphics has an SDF formulation.
 

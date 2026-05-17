@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { DecoderPanel } from './components/decoder-panel'
 import { FIXTURES, type Fixture } from './fixtures'
+import { ResearchSection } from './research/research-section'
 
 const SEP = '·'
 const REPO_URL = 'https://github.com/goliajp/vectx'
@@ -16,6 +17,7 @@ export function App() {
       <main className="vx-main">
         <Hero />
         <Demo activeId={activeId} setActiveId={setActiveId} active={active} />
+        <ResearchSection />
       </main>
       <BottomBar />
     </>
